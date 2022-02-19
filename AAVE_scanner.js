@@ -1,4 +1,7 @@
 import { request, gql } from "graphql-request";
+import mysql from "mysql";
+import dotenv from "dotenv";
+dotenv.config();
 
 const recursiveLog = (object) => {
   for (key in object) {
@@ -57,7 +60,7 @@ const deposits = gql`
 
 const repays = gql`
   {
-    repays(first: 100) {
+    repays(first: 5) {
       user {
         id
       }
@@ -76,6 +79,17 @@ const repays = gql`
   }
 `;
 
+const db = mysql.createConnection({
+  host: process.env.HOST,
+  user: process.env.DBUSER,
+  password: process.env.PASSWORD,
+  database: process.env.DATABASE,
+});
+
+db.connect((err) => {
+  if (err) throw err;
+  console.log("Connected!");
+});
 // request(
 // "https://api.thegraph.com/subgraphs/name/aave/protocol-v2",
 // borrows
