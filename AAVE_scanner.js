@@ -4,19 +4,6 @@ import dotenv from "dotenv";
 import util from "util";
 dotenv.config();
 
-const recursiveLog = (object) => {
-  for (key in object) {
-    let value = object[key];
-    if (typeof value === "object") {
-      console.log("{");
-      recursiveLog(value);
-      console.log("}");
-    } else {
-      console.log(value);
-    }
-  }
-};
-
 const db = await mysql.createConnection({
   host: process.env.HOST,
   user: process.env.DBUSER,
