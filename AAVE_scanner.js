@@ -58,9 +58,18 @@ const deposits = gql`
   }
 `;
 
-const repays = gql`
+const db = mysql.createConnection({
+  host: process.env.HOST,
+  user: process.env.DBUSER,
+  password: process.env.PASSWORD,
+  database: process.env.DATABASE,
+});
+
+let lastTimeStamp = 0;
+
+let repays = gql`
   {
-    repays(first: 5) {
+    repays(first: 25, where: { timestamp_lt: ${lastTimeStamp} }) {
       user {
         id
       }
@@ -79,26 +88,13 @@ const repays = gql`
   }
 `;
 
-const db = mysql.createConnection({
-  host: process.env.HOST,
-  user: process.env.DBUSER,
-  password: process.env.PASSWORD,
-  database: process.env.DATABASE,
-});
+let insert = "INSERT INTO AAVE_Accounts (AccountHash, TimeStamp) VALUES ?";
+let values = [];
 
 db.connect((err) => {
   if (err) throw err;
   console.log("Connected!");
 });
-// request(
-// "https://api.thegraph.com/subgraphs/name/aave/protocol-v2",
-// borrows
-// ).then((data) => recursiveLog(data));
-
-// request(
-// "https://api.thegraph.com/subgraphs/name/aave/protocol-v2",
-// deposits
-// ).then((data) => recursiveLog(data));
 
 request(
   "https://api.thegraph.com/subgraphs/name/aave/protocol-v2",
@@ -109,5 +105,15 @@ request(
     console.log(repays[transactions].user.id);
     console.log(repays[transactions].timestamp);
     console.log(repays[transactions].reserve.symbol);
+    values = [[repays[transactions].user.id, repays[transactions].timestamp]];
+
+    db.query(insert, [values], (err, result) => {
+      try {
+        if (err) throw err;
+        console.log(values[0][0] + "inserted");
+      } catch (err) {
+        console.log("Skipping duplicate record...");
+      }
+    });
   }
 });
