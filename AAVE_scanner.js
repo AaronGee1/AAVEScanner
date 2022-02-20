@@ -88,13 +88,12 @@ let repays = gql`
   }
 `;
 
-let insert = "INSERT INTO AAVE_Accounts (AccountHash, TimeStamp) VALUES ?";
-let values = [];
-
 db.connect((err) => {
   if (err) throw err;
   console.log("Connected!");
 });
+
+let insert = "INSERT INTO AAVE_Accounts (AccountHash, TimeStamp) VALUES ?";
 
 request(
   "https://api.thegraph.com/subgraphs/name/aave/protocol-v2",
@@ -105,7 +104,9 @@ request(
     console.log(repays[transactions].user.id);
     console.log(repays[transactions].timestamp);
     console.log(repays[transactions].reserve.symbol);
-    values = [[repays[transactions].user.id, repays[transactions].timestamp]];
+    let values = [
+      [repays[transactions].user.id, repays[transactions].timestamp],
+    ];
 
     db.query(insert, [values], (err, result) => {
       try {
