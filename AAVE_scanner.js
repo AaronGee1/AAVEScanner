@@ -4,10 +4,6 @@ import dotenv from "dotenv";
 import util from "util";
 dotenv.config();
 
-// timeout = () => {
-//   return new Promise(resolve => setTimeout(resolve, 60))
-// }
-
 const db = await mysql.createConnection({
   host: process.env.HOST,
   user: process.env.DBUSER,
