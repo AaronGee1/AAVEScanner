@@ -25,10 +25,14 @@ const result = await db.query(select).catch((err) => {
 });
 
 let lastTimeStamp = result[0]["MIN(TimeStamp)"];
+if (lastTimeStamp == null) {
+  lastTimeStamp = ~~(new Date().getTime() / 1000);
+}
+console.log(lastTimeStamp);
 
 let repays = gql`
   {
-    repays(first: 25, where: { timestamp_lt: ${lastTimeStamp} }) {
+    repays(first: 5, where: { timestamp_lt: ${lastTimeStamp} }) {
       user {
         id
       }
@@ -47,9 +51,9 @@ let repays = gql`
   }
 `;
 
-const borrows = gql`
+let borrows = gql`
   {
-    borrows(first: 5) {
+    borrows(first: 5, where: {timestamp_lt: ${lastTimeStamp}}) {
       user {
         id
       }
@@ -68,9 +72,9 @@ const borrows = gql`
   }
 `;
 
-const deposits = gql`
+let deposits = gql`
   {
-    deposits(first: 5) {
+    deposits(first: 5, where: {timestamp_lt: ${lastTimeStamp}}) {
       user {
         id
       }
@@ -94,6 +98,48 @@ const insert = "INSERT INTO AAVE_Accounts (AccountHash, TimeStamp) VALUES ?";
 request(
   "https://api.thegraph.com/subgraphs/name/aave/protocol-v2",
   repays
+).then((data) => {
+  let repays = data["repays"];
+  for (const transactions in repays) {
+    let values = [
+      [repays[transactions].user.id, repays[transactions].timestamp],
+    ];
+
+    db.query(insert, [values], (err, result) => {
+      try {
+        if (err) throw err;
+        console.log(values[0][0] + " inserted");
+      } catch (err) {
+        console.log("Skipping duplicate record...");
+      }
+    });
+  }
+});
+
+request(
+  "https://api.thegraph.com/subgraphs/name/aave/protocol-v2",
+  borrows
+).then((data) => {
+  let repays = data["repays"];
+  for (const transactions in repays) {
+    let values = [
+      [repays[transactions].user.id, repays[transactions].timestamp],
+    ];
+
+    db.query(insert, [values], (err, result) => {
+      try {
+        if (err) throw err;
+        console.log(values[0][0] + " inserted");
+      } catch (err) {
+        console.log("Skipping duplicate record...");
+      }
+    });
+  }
+});
+
+request(
+  "https://api.thegraph.com/subgraphs/name/aave/protocol-v2",
+  deposits
 ).then((data) => {
   let repays = data["repays"];
   for (const transactions in repays) {
