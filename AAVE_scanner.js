@@ -64,7 +64,98 @@ while (true) {
   }
 `;
 
-  const insert = "INSERT INTO AAVE_Accounts (AccountHash, TimeStamp) VALUES ?";
+  let userReserve = gql`
+    {
+      userReserves(
+        where: { user: "0x94ee9c600870c4199a1af8496eeb3087f2d1c32f" }
+      ) {
+        scaledATokenBalance
+        reserve {
+          id
+          underlyingAsset
+          name
+          symbol
+          decimals
+          liquidityRate
+          reserveLiquidationBonus
+          lastUpdateTimestamp
+          aToken {
+            id
+          }
+        }
+        usageAsCollateralEnabledOnUser
+        stableBorrowRate
+        stableBorrowLastUpdateTimestamp
+        principalStableDebt
+        scaledVariableDebt
+        variableBorrowIndex
+        lastUpdateTimestamp
+      }
+    }
+  `;
+
+  let reserveData = gql`
+    {
+      reserves(first: 1000) {
+        id
+        underlyingAsset
+        name
+        symbol
+        decimals
+        isActive
+        isFrozen
+        usageAsCollateralEnabled
+        borrowingEnabled
+        stableBorrowRateEnabled
+        baseLTVasCollateral
+        optimalUtilisationRate
+        averageStableRate
+        stableRateSlope1
+        stableRateSlope2
+        baseVariableBorrowRate
+        variableRateSlope1
+        variableRateSlope2
+        variableBorrowIndex
+        variableBorrowRate
+        totalScaledVariableDebt
+        liquidityIndex
+        reserveLiquidationThreshold
+        aToken {
+          id
+        }
+        vToken {
+          id
+        }
+        sToken {
+          id
+        }
+        availableLiquidity
+        stableBorrowRate
+        liquidityRate
+        totalPrincipalStableDebt
+        totalLiquidity
+        utilizationRate
+        reserveLiquidationBonus
+        price {
+          priceInEth
+        }
+        lastUpdateTimestamp
+        stableDebtLastUpdateTimestamp
+        reserveFactor
+      }
+    }
+  `;
+
+  let getUsdPriceEth = gql`
+    {
+      priceOracle(id: "1") {
+        usdPriceEth
+      }
+    }
+  `;
+
+  const insert =
+    "INSERT INTO AAVE_Accounts (AccountHash, TimeStamp) VALUES ? ON DUPLICATE KEY UPDATE TimeStamp = VALUES(TimeStamp)";
 
   request(
     "https://api.thegraph.com/subgraphs/name/aave/protocol-v2",
@@ -127,6 +218,13 @@ while (true) {
         }
       });
     }
+  });
+
+  request(
+    "https://api.thegraph.com/subgraphs/name/aave/protocol-v2",
+    getUsdPriceEth
+  ).then((data) => {
+    console.log((1 / data["priceOracle"]["usdPriceEth"]) * 10 ** 18);
   });
 
   console.log("Waiting for next Check...");
