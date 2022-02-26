@@ -33,7 +33,7 @@ while (true) {
 
   let repays = gql`
   {
-    repays(first: 100, where: { timestamp_gt: ${lastTimeStamp} }) {
+    repays(first: 1000, where: { timestamp_gt: ${lastTimeStamp} }) {
       user {
         id
       }
@@ -44,7 +44,7 @@ while (true) {
 
   let borrows = gql`
   {
-    borrows(first: 100, where: {timestamp_gt: ${lastTimeStamp}}) {
+    borrows(first: 1000, where: {timestamp_gt: ${lastTimeStamp}}) {
       user {
         id
       }
@@ -55,7 +55,7 @@ while (true) {
 
   let deposits = gql`
   {
-    deposits(first: 100, where: {timestamp_gt: ${lastTimeStamp}}) {
+    deposits(first: 1000, where: {timestamp_gt: ${lastTimeStamp}}) {
       user {
         id
       }
