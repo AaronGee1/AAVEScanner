@@ -2,6 +2,8 @@ import { request, gql } from "graphql-request";
 import mysql from "mysql";
 import dotenv from "dotenv";
 import util from "util";
+import { v2, BigNumberValue } from "@aave/protocol-js";
+
 dotenv.config();
 
 const db = await mysql.createConnection({
@@ -219,6 +221,8 @@ while (true) {
       });
     }
   });
+
+  let usdPriceEth: BigNumberValue;
 
   request(
     "https://api.thegraph.com/subgraphs/name/aave/protocol-v2",
